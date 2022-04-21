@@ -1,21 +1,14 @@
 # nullref
 Browser-based `end-to-end encrypted` messaging service with a `zero-trust proxy` using `websockets` & `asymmetric encryption`.
-## Requirements
-- Identity
-  - Public-Key Indentification
-  - Public-Key Verification
-  - Session-specific alias
-- Client
-  - Browser-based
-  - As close to static HTML and vanilla JS as possible
-  - Self-contained
-  - Verify public-keys
-  - Use asymmetric encryption (RSA) to encrypt messages
-- Server
-  - Simple, simple, simple
-  - Verify public-keys
-  - Handle connections and route messages to respective clients
-- Security
-  - Client IPs should ONLY be visible to the proxy server attatched to their public-key
-  - Messages should ONLY be visibile in plaintext to the clients
-  - Encryption and decryption should be handled by the clients
+
+**CURRENTLY BUILDING MVP**
+## Technologies
+Client - Static `HTML`, `JS`, and `CSS` stored locally \
+Server - Containerized `python flask` server
+## Repository Structure
+[Documentation](doc/) - Folder containing information on the project and guidelines
+- [Requirements](doc/REQUIREMENTS.md) - Set of baseline requirements for the project.
+- [Contributing](doc/CONTRIBUTING.md) - Contribution guidelines
+
+[Server](server/) - Folder containing server component
+[Client](client/) - Folder containing client component
