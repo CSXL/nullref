@@ -1,5 +1,5 @@
 """
-Handles runtime
+Attrocity used for testing.
 """
 import asyncio
 import typing
@@ -62,7 +62,7 @@ async def consumer_handler(connection: Connection):
             assert isinstance(message, typing.ByteString), 'Message must be bytes'
         except AssertionError as error:
             logging.error(error)
-            continue # 
+            continue
         try: # Serializes and loads message
             message = dict_from_bytes(message)
         except (JSONDecodeError, BinasciiError) as error:
