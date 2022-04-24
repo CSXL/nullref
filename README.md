@@ -10,5 +10,5 @@ Server - Containerized `python flask` server
 - [Requirements](doc/REQUIREMENTS.md) - Set of baseline requirements for the project.
 - [Contributing](doc/CONTRIBUTING.md) - Contribution guidelines
 
-[Server](server/) - Folder containing server component
+[Server](server/) - Folder containing server component \
 [Client](client/) - Folder containing client component
