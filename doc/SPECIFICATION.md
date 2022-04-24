@@ -29,7 +29,7 @@
   - Messages will ONLY be visible in plaintext to the intended recepient
   - Encryption and decryption should be handled by the clients
 ### Feature Detail
-<u>**Identity**</u> \
+**Identity** \
 **Identities in a zero-trust system should be `recyclable`, `verifiable` 
 and `untracable`.** This zero-trust model allows for security of client 
 data over insecure networks and malicious middlemen. Unlike an IP, a 
@@ -41,12 +41,12 @@ the case of spam or targeting. Public-keys can be used to sign and
 encrypt messages, allowing for verification and untracability of 
 senders.
 
-<u>**Client**</u> \
-**Clients should encrypt ALL plaintext messages with the recepients public
-key.** If clients encrypt messages with the recepients public keys, only
-the intended recepient can read the contents of the message. If only
-the intended recepient can read a message, a server routing messages to
-a non-intended location will not compromise the integrity of said 
-messages. 
+**Client** \
+**Clients should encrypt ALL plaintext messages with the recepients 
+public key.** If clients encrypt messages with the recepients public 
+keys, only the intended recepient can read the contents of the message. 
+If only the intended recepient can read a message, a server routing 
+messages to a non-intended location will not compromise the integrity of 
+said messages.
 
-<u>**Server**</u>
+**Server**
