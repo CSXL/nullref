@@ -7,7 +7,7 @@ Client - Static `HTML`, `JS`, and `CSS` stored locally \
 Server - Containerized `python flask` server
 ## Repository Structure
 [Documentation](doc/) - Folder containing information on the project and guidelines
-- [Requirements](doc/REQUIREMENTS.md) - Set of baseline requirements for the project.
+- [Specification](doc/SPECIFICATION.md) - Details requirements, features, and components of the project
 - [Contributing](doc/CONTRIBUTING.md) - Contribution guidelines
 
 [Server](server/) - Folder containing server component \
