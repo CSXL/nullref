@@ -1,7 +1,7 @@
 # Requirements
 ## High-Level Components
 - Identity
-  - Public-Key Indentification
+  - Public-Key Identification
   - Public-Key Verification
   - Session-specific alias
 - Client
