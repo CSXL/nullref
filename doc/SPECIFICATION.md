@@ -57,3 +57,11 @@ purpose of the server is to abstract away the IP addresses of senders
 with public keys. By limiting servers to this scope we can trust them as
 little as possible. All the servers need to do is propagate messages 
 across clients. The rest is sugar.
+
+## Component Details
+### Client
+ - `HTML5` with `CSS3` in style tag and `JS (ES6)` in script tag (for 
+ portability)
+ - Use of websockets in accordance to the 
+ [RCF 6455](https://datatracker.ietf.org/doc/html/rfc6455) specification (which can be accomplished by using the browser API)
+ - `RSA` key-pair generation, signing, and encryption implemented with the [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API) <!-- Newline here broke link so exception to line char limit -->
