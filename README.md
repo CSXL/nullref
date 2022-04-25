@@ -2,7 +2,11 @@
 Browser-based `end-to-end encrypted` messaging service with a 
 `zero-trust proxy` using `websockets` & `asymmetric encryption`.
 
-**CURRENTLY BUILDING MVP**
+**Maintainer** \
+GitHub Profile: [@ecsbeats](https://github.com/ecsbeats) \
+Email: [adamb@csxlabs.org](mailto:adamb@csxlabs.org)
+
+**Stage:** Research & Planning 
 ## Technologies
 Client - Static `HTML`, `JS`, and `CSS` stored locally \
 Server - Containerized `python` `websocket` server
