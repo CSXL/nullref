@@ -28,7 +28,7 @@
   connected to
   - Messages will ONLY be visible in plaintext to the intended recepient
   - Encryption and decryption should be handled by the clients
-### Feature Detail
+### Feature Notes
 **Identity** \
 **Identities in a zero-trust system should be `recyclable`, `verifiable` 
 and `untracable`.** This zero-trust model allows for security of client 
@@ -42,11 +42,18 @@ encrypt messages, allowing for verification and untracability of
 senders.
 
 **Client** \
-**Clients should encrypt ALL plaintext messages with the recepients 
+**Clients should encrypt _ALL_ plaintext messages with the recepients 
 public key.** If clients encrypt messages with the recepients public 
 keys, only the intended recepient can read the contents of the message. 
 If only the intended recepient can read a message, a server routing 
 messages to a non-intended location will not compromise the integrity of 
-said messages.
+said messages. **Clients should also handle the storage of all 
+messages.** By clients handling messages, clients can rely on themselves
+for message history and history depth.
 
-**Server**
+**Server** \
+**Servers should be the _ONLY_ component that stores client IPs.** The 
+purpose of the server is to abstract away the IP addresses of senders 
+with public keys. By limiting servers to this scope we can trust them as
+little as possible. All the servers need to do is propagate messages 
+across clients. The rest is sugar.
