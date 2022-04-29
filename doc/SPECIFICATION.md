@@ -63,5 +63,11 @@ across clients. The rest is sugar.
  - `HTML5` with `CSS3` in style tag and `JS (ES6)` in script tag (for 
  portability)
  - Use of websockets in accordance to the 
- [RCF 6455](https://datatracker.ietf.org/doc/html/rfc6455) specification (which can be accomplished by using the browser API)
- - `RSA` key-pair generation, signing, and encryption implemented with the [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API) <!-- Newline here broke link so exception to line char limit -->
+ [RCF 6455](https://datatracker.ietf.org/doc/html/rfc6455) specification
+ using the browser's native
+ [WebSocket API](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API)
+ - `RSA` key-pair generation, signing, and encryption implemented with the [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API)
+ - Storage of application state and messages using the browser's native
+ [Web Storage API](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage)
+ - _Zero_ External Dependencies
+ 
