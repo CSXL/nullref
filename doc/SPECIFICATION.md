@@ -71,3 +71,5 @@ across clients. The rest is sugar.
  [Web Storage API](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage)
  - _Zero_ External Dependencies
  
+ ### Server
+ - `Rust` `websocket` server.
