@@ -75,4 +75,7 @@ across clients. The rest is sugar.
  - `Rust` `websocket` server. Chosen for its
 [speed](https://www.researchgate.net/profile/Matt-Tomasetti-2/publication/348993267_An_Analysis_of_the_Performance_of_Websockets_in_Various_Programming_Languages_and_Libraries/links/601a30ba299bf1cc269cdd6f/An-Analysis-of-the-Performance-of-Websockets-in-Various-Programming-Languages-and-Libraries.pdf)
 and popularity. And also, I just wanted to try it :p
- - Utilizing `tokio` for asynchronous 
+ - Using `tokio` for the asynchronous runtime. Interesting discussion about Tokio
+[here](https://www.reddit.com/r/rust/comments/u8uw3z/is_tokio_slow_or_is_it_just_being_compared/)
+ - Using `tokio-tugstenite` for the websockets. Why? Because of 
+[this discussion](https://www.reddit.com/r/rust/comments/goxm85/which_websocket_library_to_use/)
