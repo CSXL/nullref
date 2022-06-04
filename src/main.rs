@@ -21,7 +21,6 @@ use tungstenite::protocol::Message;
 type Tx = UnboundedSender<Message>;
 type PeerMap = Arc<Mutex<HashMap<SocketAddr, Tx>>>;
 
-// Handle incoming peers
 async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, peer_address: SocketAddr) {
     info!("Incoming TCP connection from: {}", peer_address);
 
@@ -64,10 +63,7 @@ async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, peer_addres
         .remove(&peer_address);
     trace!("{} removed from peer map", &peer_address);
 }
-// Receive messages
-// Send messages
 
-// Runtime
 #[tokio::main]
 async fn main() -> Result<(), IoError>{
     env_logger::init();
