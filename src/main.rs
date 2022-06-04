@@ -1,6 +1,5 @@
 use env_logger::Env;
 use log::{info, trace};
-use std::default::default;
 use std::{
     collections::HashMap,
     env,
