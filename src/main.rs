@@ -75,7 +75,7 @@ async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, peer_addres
 
     let (peer_sink, peer_stream) = split_websocket_stream(ws_stream);
 
-    let broadcast_incoming = peer_stream.try_for_each(|message: Message| {
+    let message_handler = peer_stream.try_for_each(|message: Message| {
         info!(
             "Received a message from {}: {}",
             peer_address,
@@ -87,8 +87,8 @@ async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, peer_addres
 
     let receive_from_peers = rx.map(Ok).forward(peer_sink);
 
-    pin_mut!(broadcast_incoming, receive_from_peers);
-    future::select(broadcast_incoming, receive_from_peers).await;
+    pin_mut!(message_handler, receive_from_peers);
+    future::select(message_handler, receive_from_peers).await;
 
     info!("{} disconnected", &peer_address);
     peer_map.lock().unwrap().remove(&peer_address);
