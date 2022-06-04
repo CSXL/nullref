@@ -73,9 +73,9 @@ async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, peer_addres
     let (tx, rx) = create_mpsc_channel();
     add_peer_to_map(peer_address.clone(), tx.clone(), &peer_map);
 
-    let (peer_sink, peer_stream) = split_websocket_stream(ws_stream);
+    let (outgoing, incoming) = split_websocket_stream(ws_stream);
 
-    let message_handler = peer_stream.try_for_each(|message: Message| {
+    let handle_incoming = incoming.try_for_each(|message: Message| {
         info!(
             "Received a message from {}: {}",
             peer_address,
@@ -84,11 +84,10 @@ async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, peer_addres
         broadcast_to_all(message, &peer_map).expect("Error broadcasting message.");
         future::ok(())
     });
+    let handle_outgoing = rx.map(Ok).forward(outgoing);
 
-    let receive_from_peers = rx.map(Ok).forward(peer_sink);
-
-    pin_mut!(message_handler, receive_from_peers);
-    future::select(message_handler, receive_from_peers).await;
+    pin_mut!(handle_incoming, handle_outgoing);
+    future::select(handle_incoming, handle_outgoing).await;
 
     info!("{} disconnected", &peer_address);
     peer_map.lock().unwrap().remove(&peer_address);
