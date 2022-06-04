@@ -16,18 +16,24 @@ use futures_channel::mpsc::{unbounded, UnboundedSender};
 use futures_util::{future, pin_mut, stream::TryStreamExt, StreamExt};
 
 use tokio::net::{TcpListener, TcpStream};
+use tokio_tungstenite::WebSocketStream;
 use tungstenite::protocol::Message;
 
 type Tx = UnboundedSender<Message>;
 type PeerMap = Arc<Mutex<HashMap<SocketAddr, Tx>>>;
 
+async fn establish_websocket_handshake(tcp_stream: TcpStream) -> WebSocketStream<TcpStream> {
+    let ws_stream: WebSocketStream<TcpStream> = tokio_tungstenite::accept_async(raw_stream)
+        .await
+        .expect("Error during the websocket handshake");
+    return ws_stream;
+}
+
 async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, peer_address: SocketAddr) {
     info!("Incoming TCP connection from: {}", peer_address);
 
     trace!("Initiating websocket handshake");
-    let ws_stream = tokio_tungstenite::accept_async(raw_stream)
-        .await
-        .expect("Error during the websocket handshake");
+    let ws_stream = establish_websocket_handshake(raw_stream).await;
     info!("Websocket connection established with {}", peer_address);
 
     let (tx, rx) = unbounded();
