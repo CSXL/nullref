@@ -8,7 +8,7 @@ Email: [adamb@csxlabs.org](mailto:adamb@csxlabs.org)
 
 **Stage:** Research & Planning 
 ## Technologies
-More information in [Specification](doc/SPECIFICATION.md)
+More information in [Specification](doc/SPECIFICATION.md) \
 Client - Static `HTML`, `JS`, and `CSS` stored locally \
 Server - Containerized `Rust` `websocket` server
 ## Repository Structure
