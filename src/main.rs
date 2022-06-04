@@ -1,5 +1,6 @@
 use env_logger::Env;
 use log::{info, trace};
+use std::default::default;
 use std::{
     collections::HashMap,
     env,
@@ -89,21 +90,33 @@ async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, peer_addres
     trace!("{} removed from peer map", &peer_address);
 }
 
+fn setup_logger(default_filter: &str) {
+    let default_env = Env::default().default_filter_or(default_filter);
+    env_logger::Builder::from_env(default_env).init();
+}
+
+fn get_host_address(default_address: &str) -> String {
+    return env::args()
+        .nth(1)
+        .unwrap_or_else(|| default_address.to_string());
+}
+
 #[tokio::main]
 async fn main() -> Result<(), IoError> {
-    env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
-    let host_address = env::args()
-        .nth(1)
-        .unwrap_or_else(|| "127.0.0.1:8080".to_string());
+    let default_host = "127.0.0.1:8080";
+    let default_log_level = "info";
 
-    let state = PeerMap::new(Mutex::new(HashMap::new()));
+    let host_address = get_host_address(default_host);
+    setup_logger(default_log_level);
+
+    let peer_map = PeerMap::new(Mutex::new(HashMap::new()));
 
     let try_socket = TcpListener::bind(&host_address).await;
     let listener = try_socket.expect("Failed to bind to socket");
     info!("Listening on: {}", host_address);
 
     while let Ok((stream, peer_address)) = listener.accept().await {
-        tokio::spawn(handle_connection(state.clone(), stream, peer_address));
+        tokio::spawn(handle_connection(peer_map.clone(), stream, peer_address));
     }
 
     Ok(())
