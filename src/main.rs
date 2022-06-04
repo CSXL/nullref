@@ -1,7 +1,3 @@
-/*
-Objective: Create a full duplex connection between a client and server.
-*/
-
 use env_logger::Env;
 use log::{info, trace};
 use std::{
@@ -74,7 +70,6 @@ async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, peer_addres
     add_peer_to_map(peer_address.clone(), tx.clone(), &peer_map);
 
     let (outgoing, incoming) = split_websocket_stream(ws_stream);
-
     let handle_incoming = incoming.try_for_each(|message: Message| {
         info!(
             "Received a message from {}: {}",
