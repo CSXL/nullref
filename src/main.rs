@@ -12,7 +12,8 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use futures_channel::mpsc::{unbounded, UnboundedSender};
+use futures_channel::mpsc::{unbounded, UnboundedReceiver, UnboundedSender};
+use futures_util::stream::{SplitSink, SplitStream};
 use futures_util::{future, pin_mut, stream::TryStreamExt, StreamExt};
 
 use tokio::net::{TcpListener, TcpStream};
@@ -21,12 +22,45 @@ use tungstenite::protocol::Message;
 
 type Tx = UnboundedSender<Message>;
 type PeerMap = Arc<Mutex<HashMap<SocketAddr, Tx>>>;
+type Sink = SplitSink<WebSocketStream<TcpStream>, Message>;
+type Stream = SplitStream<WebSocketStream<TcpStream>>;
 
 async fn establish_websocket_handshake(tcp_stream: TcpStream) -> WebSocketStream<TcpStream> {
-    let ws_stream: WebSocketStream<TcpStream> = tokio_tungstenite::accept_async(raw_stream)
+    let ws_stream: WebSocketStream<TcpStream> = tokio_tungstenite::accept_async(tcp_stream)
         .await
         .expect("Error during the websocket handshake");
     return ws_stream;
+}
+
+fn create_mpsc_channel() -> (UnboundedSender<Message>, UnboundedReceiver<Message>) {
+    let (tx, rx) = unbounded();
+    return (tx, rx);
+}
+
+fn add_peer_to_map(
+    address: SocketAddr,
+    transmitting_channel: UnboundedSender<Message>,
+    peer_map: &PeerMap,
+) {
+    peer_map
+        .lock()
+        .unwrap()
+        .insert(address, transmitting_channel);
+}
+
+fn split_websocket_stream(websocket_stream: WebSocketStream<TcpStream>) -> (Sink, Stream) {
+    let (sink, stream) = websocket_stream.split();
+    return (sink, stream);
+}
+
+fn broadcast_to_all(message: Message, peer_map: &PeerMap) -> Result<(), tungstenite::Error> {
+    let peers = peer_map.lock().unwrap();
+    let peer_transmission_channels = peers.iter().map(|(_, ws_sink)| ws_sink);
+    for channel in peer_transmission_channels {
+        channel.unbounded_send(message.clone()).unwrap();
+    }
+
+    Ok(())
 }
 
 async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, peer_address: SocketAddr) {
@@ -36,10 +70,10 @@ async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, peer_addres
     let ws_stream = establish_websocket_handshake(raw_stream).await;
     info!("Websocket connection established with {}", peer_address);
 
-    let (tx, rx) = unbounded();
-    peer_map.lock().unwrap().insert(peer_address, tx);
+    let (tx, rx) = create_mpsc_channel();
+    add_peer_to_map(peer_address.clone(), tx.clone(), &peer_map);
 
-    let (peer_sink, peer_stream) = ws_stream.split();
+    let (peer_sink, peer_stream) = split_websocket_stream(ws_stream);
 
     let broadcast_incoming = peer_stream.try_for_each(|message: Message| {
         info!(
@@ -47,17 +81,7 @@ async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, peer_addres
             peer_address,
             message.to_text().unwrap()
         );
-        let locked_peers = peer_map.lock().unwrap();
-
-        let broadcast_recepeints = locked_peers
-            .iter()
-            .filter(|(address, _)| address != &&peer_address)
-            .map(|(_, ws_sink)| ws_sink);
-
-        for recipient in broadcast_recepeints {
-            recipient.unbounded_send(message.clone()).unwrap();
-        }
-
+        broadcast_to_all(message, &peer_map).expect("Error broadcasting message.");
         future::ok(())
     });
 
