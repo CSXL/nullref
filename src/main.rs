@@ -28,11 +28,6 @@ async fn establish_websocket_handshake(tcp_stream: TcpStream) -> WebSocketStream
     return ws_stream;
 }
 
-fn create_mpsc_channel() -> (UnboundedSender<Message>, UnboundedReceiver<Message>) {
-    let (tx, rx) = unbounded();
-    return (tx, rx);
-}
-
 fn add_peer_to_map(
     address: SocketAddr,
     transmitting_channel: UnboundedSender<Message>,
@@ -42,6 +37,11 @@ fn add_peer_to_map(
         .lock()
         .unwrap()
         .insert(address, transmitting_channel);
+}
+
+fn create_mpsc_channel() -> (UnboundedSender<Message>, UnboundedReceiver<Message>) {
+    let (tx, rx) = unbounded();
+    return (tx, rx);
 }
 
 fn split_websocket_stream(websocket_stream: WebSocketStream<TcpStream>) -> (Sink, Stream) {
@@ -59,17 +59,13 @@ fn broadcast_to_all(message: Message, peer_map: &PeerMap) -> Result<(), tungsten
     Ok(())
 }
 
-async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, peer_address: SocketAddr) {
-    info!("Incoming TCP connection from: {}", peer_address);
-
-    trace!("Initiating websocket handshake");
-    let ws_stream = establish_websocket_handshake(raw_stream).await;
-    info!("Websocket connection established with {}", peer_address);
-
-    let (tx, rx) = create_mpsc_channel();
-    add_peer_to_map(peer_address.clone(), tx.clone(), &peer_map);
-
-    let (outgoing, incoming) = split_websocket_stream(ws_stream);
+async fn handle_messages(
+    outgoing: Sink,
+    incoming: Stream,
+    rx: UnboundedReceiver<Message>,
+    peer_map: &PeerMap,
+    peer_address: SocketAddr,
+) {
     let handle_incoming = incoming.try_for_each(|message: Message| {
         info!(
             "Received a message from {}: {}",
@@ -83,6 +79,18 @@ async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, peer_addres
 
     pin_mut!(handle_incoming, handle_outgoing);
     future::select(handle_incoming, handle_outgoing).await;
+}
+async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, peer_address: SocketAddr) {
+    info!("Incoming TCP connection from: {}", peer_address);
+    trace!("Initiating websocket handshake");
+    let ws_stream = establish_websocket_handshake(raw_stream).await;
+    info!("Websocket connection established with {}", peer_address);
+
+    add_peer_to_map(peer_address.clone(), tx.clone(), &peer_map);
+
+    let (tx, rx) = create_mpsc_channel();
+    let (outgoing, incoming) = split_websocket_stream(ws_stream);
+    handle_messages(outgoing, incoming, rx, &peer_map, peer_address.clone()).await;
 
     info!("{} disconnected", &peer_address);
     peer_map.lock().unwrap().remove(&peer_address);
