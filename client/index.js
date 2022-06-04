@@ -1,22 +1,20 @@
-/*
-Objective: Create a full duplex connection between client and server.
- */
-"use strict";
-// Connect to server
-const HOST = "127.0.0.1";
+'use strict';
+const HOST = '127.0.0.1';
 const PORT = 8080;
+const CLIENT_ID = Math.floor(Math.random() * 1000);
 
-const server = new WebSocket("ws://" + HOST + ":" + PORT.toString());
+const server = new WebSocket('ws://' + HOST + ':' + PORT.toString());
 
-server.addEventListener('open', function (event) {
-    server.send('Discovered.');
+server.addEventListener('open', function () {
+    console.log('Established a connection with: ' + server.url)
+    server.send('Client ID: ' + CLIENT_ID);
 });
 
 server.addEventListener('message', function (event) {
     console.log('Message from server ', event.data);
 });
 
-server.addEventListener('close', function (event_) {
+server.addEventListener('close', function () {
     console.log('Connection closed');
 });
 

@@ -2,8 +2,8 @@
 Objective: Create a full duplex connection between a client and server.
 */
 
-use log::{info, trace};
 use env_logger::Env;
+use log::{info, trace};
 use std::{
     collections::HashMap,
     env,
@@ -67,10 +67,7 @@ async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, peer_addres
 
 #[tokio::main]
 async fn main() -> Result<(), IoError> {
-    env_logger::Builder::from_env(
-        Env::default()
-            .default_filter_or("info")
-    ).init();
+    env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
     let host_address = env::args()
         .nth(1)
         .unwrap_or_else(|| "127.0.0.1:8080".to_string());
