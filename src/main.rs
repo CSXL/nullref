@@ -86,9 +86,9 @@ async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, peer_addres
     let ws_stream = establish_websocket_handshake(raw_stream).await;
     info!("Websocket connection established with {}", peer_address);
 
+    let (tx, rx) = create_mpsc_channel();
     add_peer_to_map(peer_address.clone(), tx.clone(), &peer_map);
 
-    let (tx, rx) = create_mpsc_channel();
     let (outgoing, incoming) = split_websocket_stream(ws_stream);
     handle_messages(outgoing, incoming, rx, &peer_map, peer_address.clone()).await;
 
