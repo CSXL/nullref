@@ -2,10 +2,16 @@ mod server;
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    #[test]
+    #[ignore]
+    fn testing_works() {
+        assert_eq!(1, 1);
+    }
 
     #[test]
-    fn create_server() {
-        let server: server::Server = Server::new();
+    #[ignore]
+    #[should_panic]
+    fn testing_panic() {
+        panic!();
     }
 }
