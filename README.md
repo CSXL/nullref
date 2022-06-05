@@ -6,7 +6,7 @@ Browser-based `end-to-end encrypted` messaging service with a
 GitHub Profile: [@ecsbeats](https://github.com/ecsbeats) \
 Email: [adamb@csxlabs.org](mailto:adamb@csxlabs.org)
 
-**Stage:** Research & Planning 
+**Stage:** Refactoring Rough Iteration
 ## Technologies
 More information in [Specification](doc/SPECIFICATION.md) \
 Client - Static `HTML`, `JS`, and `CSS` stored locally \
