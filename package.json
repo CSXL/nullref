@@ -1,0 +1,12 @@
+{
+  "name": "nullref",
+  "version": "1.0.0",
+  "main": "client/index.js",
+  "repository": "https://github.com/CSXL/nullref.git",
+  "author": "ecsbeats <adamb@csxlabs.org>",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": ">=5.16.0",
+    "eslint-config-google": "^0.14.0"
+  }
+}
