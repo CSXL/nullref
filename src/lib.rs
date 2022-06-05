@@ -5,8 +5,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn it_works() {
-        let result = 2 + 2;
-        assert_eq!(result, 4);
+    fn create_server() {
+        let server: server::Server = Server::new();
     }
 }
