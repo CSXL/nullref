@@ -1,3 +1,8 @@
+/*
+To delete after we finish re-implementing this module in server.rs
+See https://github.com/CSXL/nullref/issues/1 for more information on refactoring this project.
+ */
+
 use env_logger::Env;
 use log::{info, trace};
 use std::{
