@@ -74,10 +74,7 @@ mod tests {
     #[tokio::test]
     async fn start_server() {
         let mut server = Server::new();
-        server
-            .start(DEFAULT_ADDRESS)
-            .await
-            .expect("Server failed to start.");
+        _start_server(&mut server).await;
         let server_address = server
             .address
             .as_ref()
@@ -86,6 +83,12 @@ mod tests {
         if let None = server.listener {
             panic!("Server listener not initialized.");
         }
+    }
+    async fn _start_server(server: &mut Server) {
+        server
+            .start(DEFAULT_ADDRESS)
+            .await
+            .expect("Server failed to start.");
     }
 
     #[tokio::test]
@@ -116,7 +119,6 @@ mod tests {
         https://www.w3.org/Daemon/User/Installation/PrivilegedPorts.html"
         );
     }
-
     async fn get_error_on_start(server: &mut Server, address: &str) -> String {
         let result = server.start(address).await.unwrap_err().to_string();
         return result;
