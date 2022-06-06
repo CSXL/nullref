@@ -34,22 +34,23 @@ mod server {
 
         #[allow(dead_code)] // Remove once rest of module is implemented
         fn validate_address(address: &str) -> Result<(), &str> {
-            let url_parse_result = Url::parse(
-                &*("https://".to_owned() + address)
-            );
+            let url_parse_result = Url::parse(&*("https://".to_owned() + address));
             if url_parse_result.is_err() {
-                return Err("Invalid address passed to server.start. Example valid address: \
-                127.0.0.1:8080");
+                return Err(
+                    "Invalid address passed to server.start. Example valid address: \
+                127.0.0.1:8080",
+                );
             }
 
             let url = url_parse_result.unwrap();
             if url.port() == None {
                 return Err("Port not specified in address. Example valid address: 127.0.0.1:8080");
-            }
-            else if url.port().unwrap() < 1024 {
-                return Err("Port numbers below 1024 (excluding special cases) are privileged and \
+            } else if url.port().unwrap() < 1024 {
+                return Err(
+                    "Port numbers below 1024 (excluding special cases) are privileged and \
                 non-writable by users. More information: \
-                https://www.w3.org/Daemon/User/Installation/PrivilegedPorts.html");
+                https://www.w3.org/Daemon/User/Installation/PrivilegedPorts.html",
+                );
             }
             Ok(())
         }
@@ -87,26 +88,37 @@ mod tests {
         }
     }
 
-    async fn get_error_on_start(server: &mut Server, address: &str) -> String {
-        let result = server.start(address).await
-            .unwrap_err()
-            .to_string();
-        return result;
-    }
-
     #[tokio::test]
     async fn start_server_with_bad_addresses() {
         let mut server = Server::new();
-        let invalid_address = get_error_on_start(&mut server, "This is a very invalid \
-        address.").await;
-        assert_eq!(invalid_address, "Invalid address passed to server.start. \
-        Example valid address: 127.0.0.1:8080");
+        let invalid_address = get_error_on_start(
+            &mut server,
+            "This is a very invalid \
+        address.",
+        )
+        .await;
+        assert_eq!(
+            invalid_address,
+            "Invalid address passed to server.start. \
+        Example valid address: 127.0.0.1:8080"
+        );
         let host_without_port = get_error_on_start(&mut server, "127.0.0.1").await;
-        assert_eq!(host_without_port, "Port not specified in address. \
-        Example valid address: 127.0.0.1:8080");
+        assert_eq!(
+            host_without_port,
+            "Port not specified in address. \
+        Example valid address: 127.0.0.1:8080"
+        );
         let port_below_1024 = get_error_on_start(&mut server, "127.0.0.1:1001").await;
-        assert_eq!(port_below_1024, "Port numbers below 1024 (excluding special cases) are \
+        assert_eq!(
+            port_below_1024,
+            "Port numbers below 1024 (excluding special cases) are \
         privileged and non-writable by users. More information: \
-        https://www.w3.org/Daemon/User/Installation/PrivilegedPorts.html");
+        https://www.w3.org/Daemon/User/Installation/PrivilegedPorts.html"
+        );
+    }
+
+    async fn get_error_on_start(server: &mut Server, address: &str) -> String {
+        let result = server.start(address).await.unwrap_err().to_string();
+        return result;
     }
 }
