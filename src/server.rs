@@ -1,4 +1,4 @@
-#[allow(clippy::Nmodule_inception)]
+#[allow(clippy::module_inception)]
 mod server {
     use tokio::net::TcpListener;
     use url::Url;
