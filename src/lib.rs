@@ -1,4 +1,5 @@
 mod server;
+mod client;
 
 #[cfg(test)]
 mod tests {
