@@ -1,13 +1,24 @@
 #[allow(clippy::module_inception)]
 mod server {
+    use env_logger::Env;
+    use log::{info, trace};
+    use std::collections::HashMap;
+    use std::net::SocketAddr;
+    use std::sync::{Arc, Mutex};
+    use futures_channel::mpsc::UnboundedSender;
     use tokio::net::TcpListener;
+    use tungstenite::Message;
     use url::Url;
+
+    type Tx = UnboundedSender<Message>;
+    type PeerMap = Arc<Mutex<HashMap<SocketAddr, Tx>>>;
 
     #[derive(Debug)]
     pub struct Server {
         // Fields are options so they can temporarily be None
         pub address: Option<String>,
         pub(crate) listener: Option<TcpListener>,
+        pub(crate) connections: Option<PeerMap>,
     }
 
     impl Server {
@@ -16,11 +27,13 @@ mod server {
             Self {
                 address: None,
                 listener: None,
+                connections: None,
             }
         }
 
         #[allow(dead_code)] // Remove once rest of module is implemented
         pub async fn start<'a>(&mut self, address: &'a str) -> Result<(), &'a str> {
+            info!("Starting server.");
             let result = Self::validate_address(address);
             if result.is_err() {
                 let error = result.err().unwrap();
@@ -28,7 +41,10 @@ mod server {
             }
             let address = String::from(address);
             self.address = Some(address.clone());
+            trace!("Binding to address provided.");
             self.bind(address).await;
+            trace!("Binding successful.");
+            info!("Server started.");
             Ok(())
         }
 
@@ -62,6 +78,17 @@ mod server {
             self.listener = Some(listener);
             self
         }
+
+        pub async fn accept_connections(&mut self) {
+            self.connections = Some(
+                PeerMap::new(Mutex::new(HashMap::new()))
+            );
+            tokio::spawn(async {
+               while let Ok((tcp_stream, address)) = self.listener.unwrap().accept().await {
+                   tokio::spawn(self.handle_connection(tcp_stream, address));
+               }
+            });
+        }
     }
 }
 
@@ -80,10 +107,11 @@ mod tests {
             .as_ref()
             .unwrap_or_else(|| panic!("Server has no address"));
         assert_eq!(server_address, DEFAULT_ADDRESS);
-        if let None = server.listener {
-            panic!("Server listener not initialized.");
-        }
+        assert_ne!(None, server.listener, "Server listener not initialized.");
+        server.accept_connections().await;
+        assert_ne!(None, server.connections, "Server connections map not initialized.");
     }
+
     async fn _start_server(server: &mut Server) {
         server
             .start(DEFAULT_ADDRESS)
@@ -119,8 +147,14 @@ mod tests {
         https://www.w3.org/Daemon/User/Installation/PrivilegedPorts.html"
         );
     }
+
     async fn get_error_on_start(server: &mut Server, address: &str) -> String {
         let result = server.start(address).await.unwrap_err().to_string();
         return result;
+    }
+
+    #[tokio::test]
+    async fn start_server_and_listen() {
+
     }
 }

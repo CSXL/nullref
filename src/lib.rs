@@ -1,5 +1,5 @@
 mod server;
-mod client;
+mod mockclient;
 
 #[cfg(test)]
 mod tests {
