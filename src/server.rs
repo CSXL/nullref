@@ -1,24 +1,21 @@
 #[allow(clippy::module_inception)]
 mod server {
-    use env_logger::Env;
     use log::{info, trace};
     use std::collections::HashMap;
     use std::net::SocketAddr;
     use std::sync::{Arc, Mutex};
     use futures_channel::mpsc::UnboundedSender;
-    use tokio::net::TcpListener;
+    use tokio::net::{TcpListener, TcpStream};
     use tungstenite::Message;
     use url::Url;
 
     type Tx = UnboundedSender<Message>;
-    type PeerMap = Arc<Mutex<HashMap<SocketAddr, Tx>>>;
+    pub type PeerMap = Arc<Mutex<HashMap<SocketAddr, Tx>>>;
 
     #[derive(Debug)]
     pub struct Server {
         // Fields are options so they can temporarily be None
         pub address: Option<String>,
-        pub(crate) listener: Option<TcpListener>,
-        pub(crate) connections: Option<PeerMap>,
     }
 
     impl Server {
@@ -26,8 +23,6 @@ mod server {
         pub fn new() -> Self {
             Self {
                 address: None,
-                listener: None,
-                connections: None,
             }
         }
 
@@ -42,9 +37,12 @@ mod server {
             let address = String::from(address);
             self.address = Some(address.clone());
             trace!("Binding to address provided.");
-            self.bind(address).await;
+            let listener = self.bind(address).await;
             trace!("Binding successful.");
             info!("Server started.");
+            // Starts awaiting connections
+            // TODO: Make this function not halt execution
+            // self.accept_connections(listener).await;
             Ok(())
         }
 
@@ -72,29 +70,30 @@ mod server {
         }
 
         #[allow(dead_code)] // Remove once rest of module is implemented
-        async fn bind(&mut self, address: String) -> &Server {
+        async fn bind(&mut self, address: String) -> TcpListener {
             let try_socket = TcpListener::bind(&address).await;
             let listener = try_socket.expect("Failed to bind to socket");
-            self.listener = Some(listener);
-            self
+            listener
         }
 
-        pub async fn accept_connections(&mut self) {
-            self.connections = Some(
-                PeerMap::new(Mutex::new(HashMap::new()))
-            );
-            tokio::spawn(async {
-               while let Ok((tcp_stream, address)) = self.listener.unwrap().accept().await {
-                   tokio::spawn(self.handle_connection(tcp_stream, address));
-               }
-            });
+        pub async fn accept_connections(&mut self, listener: TcpListener) {
+            let connections = PeerMap::new(Mutex::new(HashMap::new()));
+            while let Ok((tcp_stream, address)) = listener.accept().await {
+                tokio::spawn(Self::handle_connection(connections.clone(),
+                                                     tcp_stream, address));
+            }
+        }
+
+        async fn handle_connection(connections: PeerMap, tcp_stream: TcpStream, address: SocketAddr) {
+
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    const DEFAULT_ADDRESS: &str = "127.0.0.1:8080";
+    const DEFAULT_ADDRESS: &str = "127.0.0.1:8090";
+
     use super::*;
     use server::Server;
 
@@ -106,10 +105,7 @@ mod tests {
             .address
             .as_ref()
             .unwrap_or_else(|| panic!("Server has no address"));
-        assert_eq!(server_address, DEFAULT_ADDRESS);
-        assert_ne!(None, server.listener, "Server listener not initialized.");
-        server.accept_connections().await;
-        assert_ne!(None, server.connections, "Server connections map not initialized.");
+        assert_eq!(server_address, DEFAULT_ADDRESS)
     }
 
     async fn _start_server(server: &mut Server) {
@@ -151,10 +147,5 @@ mod tests {
     async fn get_error_on_start(server: &mut Server, address: &str) -> String {
         let result = server.start(address).await.unwrap_err().to_string();
         return result;
-    }
-
-    #[tokio::test]
-    async fn start_server_and_listen() {
-
     }
 }

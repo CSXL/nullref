@@ -6,7 +6,6 @@ mod client {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
 
     #[test]
     fn hello_world() {
