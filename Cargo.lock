@@ -271,6 +271,7 @@ dependencies = [
  "futures-channel",
  "futures-util",
  "log",
+ "rand",
  "tokio",
  "tokio-tungstenite",
  "tungstenite",

@@ -1,6 +1,6 @@
-mod client {
+pub mod client {
     pub struct Client {
-
+        // TODO: Write mockclient
     }
 }
 

@@ -1,11 +1,12 @@
 #[allow(clippy::module_inception)]
 mod server {
+    use futures_channel::mpsc::UnboundedSender;
     use log::{info, trace};
     use std::collections::HashMap;
     use std::net::SocketAddr;
     use std::sync::{Arc, Mutex};
-    use futures_channel::mpsc::UnboundedSender;
     use tokio::net::{TcpListener, TcpStream};
+    use tokio::task::JoinHandle;
     use tungstenite::Message;
     use url::Url;
 
@@ -16,6 +17,7 @@ mod server {
     pub struct Server {
         // Fields are options so they can temporarily be None
         pub address: Option<String>,
+        accept_connections_task: Option<JoinHandle<()>>, // to allow closing the server listener
     }
 
     impl Server {
@@ -23,6 +25,7 @@ mod server {
         pub fn new() -> Self {
             Self {
                 address: None,
+                accept_connections_task: None,
             }
         }
 
@@ -40,9 +43,10 @@ mod server {
             let listener = self.bind(address).await;
             trace!("Binding successful.");
             info!("Server started.");
-            // Starts awaiting connections
-            // TODO: Make this function not halt execution
-            // self.accept_connections(listener).await;
+            let accept_connections_task = tokio::spawn(async {
+                Self::accept_connections(listener).await;
+            });
+            self.accept_connections_task = Some(accept_connections_task);
             Ok(())
         }
 
@@ -76,26 +80,47 @@ mod server {
             listener
         }
 
-        pub async fn accept_connections(&mut self, listener: TcpListener) {
+        pub async fn accept_connections(listener: TcpListener) {
             let connections = PeerMap::new(Mutex::new(HashMap::new()));
             while let Ok((tcp_stream, address)) = listener.accept().await {
-                tokio::spawn(Self::handle_connection(connections.clone(),
-                                                     tcp_stream, address));
+                tokio::spawn(Self::handle_connection(
+                    connections.clone(),
+                    tcp_stream,
+                    address,
+                ));
             }
         }
 
-        async fn handle_connection(connections: PeerMap, tcp_stream: TcpStream, address: SocketAddr) {
+        async fn handle_connection(
+            connections: PeerMap,
+            tcp_stream: TcpStream,
+            address: SocketAddr,
+        ) {
+            // TODO: Write logic for handling connections
+        }
 
+        pub async fn close(&mut self) {
+            if self.accept_connections_task.is_some() {
+                self.accept_connections_task.as_ref().unwrap().abort();
+            }
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    const DEFAULT_ADDRESS: &str = "127.0.0.1:8090";
+    const DEFAULT_HOST: &str = "127.0.0.1";
 
     use super::*;
+    use rand as random;
+    use rand::Rng as random_number_generator;
     use server::Server;
+
+    fn generate_random_address() -> String {
+        let random_number = random::thread_rng().gen_range(1024..9999); // See https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers
+        let address = format!("{}:{}", DEFAULT_HOST, random_number);
+        address
+    }
 
     #[tokio::test]
     async fn start_server() {
@@ -105,12 +130,12 @@ mod tests {
             .address
             .as_ref()
             .unwrap_or_else(|| panic!("Server has no address"));
-        assert_eq!(server_address, DEFAULT_ADDRESS)
+        server.close().await;
     }
 
     async fn _start_server(server: &mut Server) {
         server
-            .start(DEFAULT_ADDRESS)
+            .start(generate_random_address().as_str())
             .await
             .expect("Server failed to start.");
     }
@@ -147,5 +172,13 @@ mod tests {
     async fn get_error_on_start(server: &mut Server, address: &str) -> String {
         let result = server.start(address).await.unwrap_err().to_string();
         return result;
+    }
+
+    #[tokio::test]
+    async fn server_responds_to_client() {
+        let mut server = Server::new();
+        _start_server(&mut server).await;
+        // TODO: Integrate with mockclient after mocklient is implemented.
+        server.close().await;
     }
 }
