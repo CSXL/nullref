@@ -84,7 +84,6 @@ mod server {
             let connections = PeerMap::new(Mutex::new(HashMap::new()));
             while let Ok((tcp_stream, address)) = listener.accept().await {
                 tokio::spawn(Self::handle_connection(
-                    connections.clone(),
                     tcp_stream,
                     address,
                 ));
@@ -92,7 +91,6 @@ mod server {
         }
 
         async fn handle_connection(
-            connections: PeerMap,
             tcp_stream: TcpStream,
             address: SocketAddr,
         ) {
