@@ -8,5 +8,9 @@
   "devDependencies": {
     "eslint": ">=5.16.0",
     "eslint-config-google": "^0.14.0"
+  },
+  "dependencies": {
+    "jsdoc": "^4.0.2",
+    "serve": "^14.2.0"
   }
 }

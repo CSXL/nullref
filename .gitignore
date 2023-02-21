@@ -1,4 +1,10 @@
+# Ignore editor files
 .vscode/
 .idea/
+
+# Ignore build files
 target/
+
+# Ignore OS files
 node_modules/
+out/
