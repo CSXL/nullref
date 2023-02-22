@@ -16,7 +16,7 @@ class Connection extends WebSocket {
    * @return {Connection}
    */
   constructor(host, port) {
-    super('ws://' + host + ':' + port.toString());
+    super(`ws://${host}:${port}`);
     return this;
   }
 
